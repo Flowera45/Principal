@@ -1,0 +1,272 @@
+import pygame
+from funcionesVACIAS import *
+from pygame.locals import *
+from configuracion import *
+from button import *
+
+#cargar recursos
+
+pygame.init()
+pygame.font.init()
+defaultFont = pygame.font.Font('recursos/Montserrat-Medium.ttf', TAMANNO_LETRA)
+defaultFontGrande = pygame.font.Font('recursos/Montserrat-Medium.ttf', TAMANNO_LETRA_GRANDE)
+defaultFontChico = pygame.font.Font('recursos/Montserrat-Medium.ttf', TAMANNO_LETRA_CHICO)
+defaultFontBold = pygame.font.Font('recursos/Montserrat-Bold.ttf', TAMANNO_LETRA_GRANDE)
+letraFinjuego=pygame.font.Font('recursos/Letra_finjuego.ttf',TAMANNO_TERMINO)
+letraPuntos= pygame.font.Font('recursos/Montserrat-Bold.ttf', TAMANNO_PUNTO)
+os.environ["SDL_VIDEO_CENTERED"] = "1"
+
+sonidoGano = pygame.mixer.Sound('recursos/ganaste.mp3')
+sonidoPerdio = pygame.mixer.Sound('recursos/perdiste.wav')
+
+text_rect = pygame.image.load("recursos/Rect.png")
+text_rect = pygame.transform.scale(text_rect,(220,40))
+
+
+def dameLetraApretada(key):
+    if key == K_a:
+        return("A")
+    elif key == K_b:
+        return("B")
+    elif key == K_c:
+        return("C")
+    elif key == K_d:
+        return("D")
+    elif key == K_e:
+        return("E")
+    elif key == K_f:
+        return("F")
+    elif key == K_g:
+        return("G")
+    elif key == K_h:
+        return("H")
+    elif key == K_i:
+        return("I")
+    elif key == K_j:
+        return("J")
+    elif key == K_k:
+        return("K")
+    elif key == K_l:
+        return("L")
+    elif key == K_m:
+        return("M")
+    elif key == K_n:
+        return("N")
+    elif key == 241:
+        return("Ñ")
+    elif key == K_o:
+        return("O")
+    elif key == K_p:
+        return("P")
+    elif key == K_q:
+        return("Q")
+    elif key == K_r:
+        return("R")
+    elif key == K_s:
+        return("S")
+    elif key == K_t:
+        return("T")
+    elif key == K_u:
+        return("U")
+    elif key == K_v:
+        return("V")
+    elif key == K_w:
+        return("W")
+    elif key == K_x:
+        return("X")
+    elif key == K_y:
+        return("Y")
+    elif key == K_z:
+        return("Z")
+    elif key == K_SLASH:
+        return("-")
+    elif key == K_KP_MINUS:
+        return("-")
+    elif key == K_SPACE:
+       return(" ")
+    else:
+        return("")
+
+
+def dibujar(screen, listaDePalabrasUsuario, palabraUsuario, puntos,segundos, intentos,palabraCorrecta,termino,listaPalabrasDiccionario,error,aciertos,incorrectasletras):
+
+    #Linea Horizontal
+    pygame.draw.line(screen, (255,255,255), (0, ALTO-70) , (ANCHO, ALTO-70), 5)
+
+#------------------------------------------------------------------------------------------------------------------
+  #PISTA
+
+    if len(listaDePalabrasUsuario)==0:
+        x=2
+        for i in range(len(palabraCorrecta)):
+
+            if i == 0 :
+
+                letraPista=defaultFontGrande.render(palabraCorrecta[i]+"  ", 1, COLOR_LETRAS)
+                ubicacion=letraPista.get_rect(center=(ANCHO//2-(((len(palabraCorrecta)-x)/2)*220)//4,120))
+                screen.blit(letraPista,ubicacion)
+
+                x+=1.8
+
+            else:
+
+                letraPista= defaultFontGrande.render("_"+"  ", 1, COLOR_LETRAS)
+                ubicacion=letraPista.get_rect(center=((ANCHO//2-(((len(palabraCorrecta)-x)/2)*220)//4,120)))
+                screen.blit(letraPista,ubicacion)
+
+                x+=1.8
+
+#------------------------------------------------------------------------------------------------------------------
+
+
+    #avisa si la palabra no esta en el diccionario o si no es la cantidad de letras
+
+    if len(palabraUsuario)!=len(palabraCorrecta) and error:
+        mensaje= defaultFontChico.render("REVISA LA CANTIDAD DE LETRAS", 1, COLOR_ROJO)
+        centro_x=(ANCHO//2)-(mensaje.get_width()//2)
+        centro_y= ALTO-300
+        screen.blit(mensaje,[centro_x,centro_y])
+
+
+
+    elif palabraUsuario not in listaPalabrasDiccionario and error:
+
+        mensaje= defaultFontChico.render("      ESA PALABRA NO EXISTE ", 1, COLOR_ROJO)
+        centro_x=(ANCHO//2)-(mensaje.get_width()//2)
+        centro_y= ALTO-300
+        screen.blit(mensaje,[centro_x,centro_y])
+##
+
+
+    elif palabraUsuario in listaDePalabrasUsuario and error:
+         mensaje= defaultFontChico.render("      NO VALE REPETIDAS F", 1, COLOR_ROJO)
+         centro_x=(ANCHO//2)-(mensaje.get_width()//2)
+         centro_y= ALTO-300
+         screen.blit(mensaje,[centro_x,centro_y])
+
+
+
+#--------------------------------------------------------------------------------------------------------------------
+
+    #muestra lo que escribe el jugador
+
+    userEscritura=defaultFontGrande.render(palabraUsuario, 1, COLOR_AZUL)  #Muestra letras en tiempo real
+    userRectangulo=userEscritura.get_rect(center=(ANCHO/2, ALTO-30))        #Centra el texto automáticamente
+    screen.blit(userEscritura,userRectangulo)                               #Dibuja
+
+
+    #muestra el puntaje
+    screen.blit(text_rect,((ANCHO/1.2)-8, ALTO/64))
+    screen.blit(defaultFont.render("Puntos: " + str(puntos), 1, COLOR_TEXTO), (ANCHO/1.2, ALTO/64))
+
+    #muestras intentos
+    screen.blit(text_rect,((ANCHO/2/1.2)-13, ALTO/64))
+    if intentos==1:
+        screen.blit(defaultFont.render("Intentos: " + str(intentos), 1, COLOR_ROJO), (ANCHO/2/1.2, ALTO/64))
+    else:
+        screen.blit(defaultFont.render("Intentos: " + str(intentos), 1, COLOR_TEXTO), (ANCHO/2/1.2, ALTO/64))
+
+
+    #muestra los segundos y puede cambiar de color con el tiempo
+    screen.blit(text_rect,((ANCHO/64),ALTO/64))
+
+    if segundos>=15 and segundos<=40:
+        ren = defaultFont.render("Tiempo: " + str(int(segundos)), 1, COLOR_AMARILLO)
+    elif segundos<15:
+        ren = defaultFont.render("Tiempo: " + str(int(segundos)), 1, COLOR_ROJO)
+    else:
+        ren = defaultFont.render("Tiempo: " + str(int(segundos)), 1, COLOR_TEXTO)
+    screen.blit(ren, (ANCHO/64,ALTO/64))
+
+    altura=0
+#--------------------------------------------------------------------------------------------------------------------
+
+    #Muestra las palabras que el usuario fue arriesgando
+
+
+    pos = 0
+
+
+
+    for palabra in reversed(listaDePalabrasUsuario):
+
+
+        if palabra == listaDePalabrasUsuario[len(listaDePalabrasUsuario)-1]:
+            x=0
+            casi=[]
+            correctas=letrascorrectas(palabra,palabraCorrecta)
+
+            for i in range(len(palabra)):
+
+                if palabra[i] == palabraCorrecta [i]:
+
+                    letraCorrecta=defaultFontGrande.render(palabra[i], 1, COLOR_VERDE)
+                    letraVerde=letraCorrecta.get_rect(center=((ANCHO//2-(((((len(palabra)-x)/2)*220)//4)-TAMANNO_LETRA_GRANDE//2), 120)))
+                    screen.blit(letraCorrecta,letraVerde)
+
+                    x+=1.8
+
+                elif palabra[i] != palabraCorrecta [i] and palabra[i] in palabraCorrecta and letrasRepetidas(palabra[i],casi,correctas,palabraCorrecta):
+
+                    casi.append(palabra[i])
+
+
+                    letraCasi=defaultFontGrande.render(palabra[i], 1, COLOR_AMARILLO)
+                    letraAmarillo=letraCasi.get_rect(center=((ANCHO//2-(((((len(palabra)-x)/2)*220)//4)-TAMANNO_LETRA_GRANDE//2), 120)))
+                    screen.blit(letraCasi,letraAmarillo)
+                    x+=1.8
+
+                else:
+
+                    letraIncorrectas=defaultFontGrande.render(palabra[i], 1, COLOR_ROJO)
+                    letraRojo=letraIncorrectas.get_rect(center=((ANCHO//2-(((((len(palabra)-x)/2)*220)//4)-TAMANNO_LETRA_GRANDE//2), 120)))
+                    screen.blit(letraIncorrectas,letraRojo)
+
+                    x+=1.8
+        else:
+            x=0
+            casi=[]
+            correctas=letrascorrectas(palabra,palabraCorrecta)
+
+            for i in range(len(palabra)):
+
+
+                if palabra[i] == palabraCorrecta [i]:
+
+                  screen.blit(defaultFontGrande.render(palabra[i]+"  ", 1, COLOR_VERDE), (ANCHO//2-(((len(palabra)-x)/2)*220)//4,(120 + 80* pos)))
+
+                elif palabra[i] != palabraCorrecta [i] and palabra[i] in palabraCorrecta and letrasRepetidas(palabra[i],casi,correctas,palabraCorrecta):
+
+                    casi.append(palabra[i])
+
+                    screen.blit(defaultFontGrande.render(palabra[i]+"  ", 1, COLOR_AMARILLO), (ANCHO//2-(((len(palabra)-x)/2)*220)//4,(120 + 80* pos)))
+
+                else:
+                   screen.blit(defaultFontGrande.render("_"+"  ", 1, COLOR_LETRAS), (ANCHO//2-(((len(palabra)-x)/2)*220)//4,(120 + 80 * pos)))
+                x+=1.8
+
+        pos += 1
+
+#--------------------------------------------------------------------------------------------------------------------
+
+    #muestra el abcdario
+    abcdario = ["QWERTYUIOP", "ASDFGHJKLÑ", " ZXCVBNM"]
+    y=1
+    for abc in abcdario:
+        x = 0
+        for letra in abc:
+
+            if letra in incorrectasletras:
+                screen.blit(defaultFont.render(letra, 1, COLOR_NEGRO), (ANCHO//3.5 + x, ALTO/1.5 + y))
+            else:
+                screen.blit(defaultFont.render(letra, 1, COLOR_LETRAS), (ANCHO//3.5 + x, ALTO/1.5 + y))
+            x += TAMANNO_LETRA_GRANDE
+        y += TAMANNO_LETRA_GRANDE
+
+    altura+=TAMANNO_LETRA_GRANDE
+
+##--------------------------------------------------------------------------------------------------------------------
+
+
+def get_font(size): # Fuente menu principal
+    return pygame.font.Font("recursos/Montserrat-Medium.ttf", size)
