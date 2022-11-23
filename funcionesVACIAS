@@ -189,6 +189,4 @@ def mejoresPuntajes(puntos,contrareloj):
             archivo.write(str(mejores[i])+'\n')
 
     archivo.close()
-
-
     return mejores
