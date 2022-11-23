@@ -1,0 +1,194 @@
+from configuracion import *
+import random
+import math
+import os
+
+
+
+def selecnivel(aciertos):
+    nivel=""
+    if aciertos<6:
+        nivel="facil"
+    elif aciertos>=6 and aciertos<12:
+        nivel="intermedio"
+    elif aciertos>=12 and aciertos<18:
+        nivel="dificil"
+    elif aciertos>=18:
+        nivel="experto"
+
+    return nivel
+
+def lectura(aciertos,num,contrareloj,letras): #seleciona las palabras que tienen las letras que solicita el nivel
+    archivo= open("recursos/lemario.txt","r")
+    aceptadas=open("recursos/lemariofull.txt","r")
+    cantaciertos=len(aciertos)
+    lista=[]
+
+    if num!=1:
+        diccionario=aceptadas.read().split()
+        cantletras=letras
+
+    else:
+        diccionario=archivo.read().split()
+
+        if contrareloj and  cantaciertos!=0:
+
+                cantletras=random.randrange(4,9)
+
+        elif cantaciertos==0 or cantaciertos==1:
+            cantletras=4
+
+        elif cantaciertos%2!=0:
+            cantletras=len(aciertos[cantaciertos-1])
+        elif cantaciertos%2==0:
+            cantletras=len(aciertos[cantaciertos-1])+1
+
+    for elem in diccionario:
+        if len(elem)==cantletras:
+            lista.append(elem.upper())
+    archivo.close()
+    return lista
+
+
+def nuevaPalabra(aciertos,contrareloj):
+    lista=lectura(aciertos,1,contrareloj,0)
+    palabra=random.choice(lista)
+    while palabra in aciertos:
+        palabra = random.choice(lista)
+
+    return palabra
+
+def letrascorrectas(palabrausuario,palabraCorrecta):
+
+    correctas = []
+    for i in range(0,len(palabrausuario)):
+        if palabrausuario [i] == palabraCorrecta[i]:
+            correctas.append(palabrausuario[i])
+    return correctas
+
+
+def letrasRepetidas(letra,casi,correctas,palabraCorrecta):
+     contCorrecta=0
+     contLista=0
+
+     for i in range(len(palabraCorrecta)):
+            if palabraCorrecta[i]==letra:
+             contCorrecta+=1
+
+     if len(correctas) != 0:
+        for i in range(len(correctas)):
+            if correctas[i]==letra:
+                contLista+=1
+     if len(casi) !=0:
+        for i in range(len(casi)):
+            if casi[i]==letra:
+                contLista+=1
+     if contLista<contCorrecta:
+           return True
+     return False
+
+
+
+def letrasincorrectas(palabrausuario,palabraCorrecta):
+    incorrectas = []
+    for letra in palabrausuario:
+        if letra not in palabraCorrecta:
+            incorrectas.append(letra)
+    return incorrectas
+
+
+
+def revision(palabraCorrecta, palabra):
+    if palabraCorrecta==palabra:
+        return True
+    return False
+
+def calculoPuntos(intentos,aciertos,contrareloj):  #Calcula los puntos dependiendo la dificultada y los intentos utilizados
+    nivel=selecnivel(len(aciertos))
+
+    if contrareloj:
+        puntos=10
+        return puntos
+
+    else:
+        if nivel== "facil":
+             puntos=10
+             x=1
+        elif nivel=="intermedio":
+             puntos=20
+             x=2
+        elif nivel== "dificil":
+             puntos=40
+             x=4
+        else:
+             puntos=50
+             x=5
+        if intentos==5:
+             return puntos
+        elif intentos==4:
+             puntos=puntos-x*2
+
+        elif intentos==3:
+             puntos=puntos-x*4
+
+        elif intentos==2:
+             puntos=puntos-x*6
+
+        else:
+             puntos=puntos-x*8
+    return puntos
+
+def mejoresPuntajes(puntos,contrareloj):
+
+#abre los achivos guardados,pasa los datos a una lista y elelimina el archivo
+
+    if contrareloj:
+        archivo= open("mejorescontrareloj.txt","r")
+        lista=archivo.read().split()
+        mejores=[]
+
+        for elem in lista:
+             mejores.append(int(elem))
+
+        archivo.close()
+
+        os.remove("mejorescontrareloj.txt")
+
+    else:
+        archivo= open("mejoresnormal.txt","r")
+        lista=archivo.read().split()
+        mejores=[]
+
+
+        for elem in lista:
+          mejores.append(int(elem))
+
+        archivo.close()
+
+        os.remove("mejoresnormal.txt")
+#----------------------------------------------------------------------------------
+
+#agrega el ultimo puntaje en la lista, los oidena de mayor a menor y elimina el ultimo item para que queden solo 5 elementos
+    mejores.append(puntos)
+
+    mejores.sort(reverse=True)
+
+    while len(mejores)>=6:
+        mejores.pop(5)
+
+#----------------------------------------------------------------------------------
+# crea un nuevo archivo y guarda los datos de la lista
+    if contrareloj:
+
+        archivo=open("mejorescontrareloj.txt","a") #crea nuevamente un archivo para guardar los puntos actualizados
+        for i in range(0,5):
+            archivo.write(str(mejores[i])+'\n')
+    else:
+        archivo=open("mejoresnormal.txt","a") #crea nuevamente un archivo para guardar los puntos actualizados
+        for i in range(0,5):
+            archivo.write(str(mejores[i])+'\n')
+
+    archivo.close()
+
+
+    return mejores
